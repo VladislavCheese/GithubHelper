@@ -9,6 +9,8 @@ import java.util.List;
 public class Gui {
 
     private final TrayIcon trayIcon;
+    private final Font loginFont = new Font("Rockwell Nova", Font.PLAIN, 14);
+    private final Font textFont = new Font("Rockwell Nova", Font.PLAIN, 12);
 
     public Gui() {
         try {
@@ -24,32 +26,35 @@ public class Gui {
         }
     }
 
-    public void setTrayMenu(String userLogin, List<RepositoryDescription> repositoryDescriptions) {
+    public void setTrayMenu(String userLogin, List<RepoDescription> repoDescriptions) {
         MenuItem accountMI = new MenuItem(userLogin);
+        accountMI.setFont(loginFont);
         accountMI.addActionListener(e -> openInBrowser("https://github.com/" + userLogin));
 
         MenuItem notificationMI = new MenuItem("notification");
+        notificationMI.setFont(textFont);
         notificationMI.addActionListener(e -> openInBrowser("https://github.com/notification"));
 
         Menu repositoriesMenu = new Menu("repositories");
-        repositoryDescriptions.forEach(repoDesc -> {
+        repoDescriptions.forEach(repoDesc -> {
             String name = repoDesc.isPullRequestExists()
-                    ? String.format("(%d) %s", repoDesc.getPullRequestUrls().size(), repoDesc.getRepoName())
+                    ? String.format("(%d) %s", repoDesc.getPullRequestsCount(), repoDesc.getRepoName())
                     : repoDesc.getRepoName();
             Menu repoSubMenu = new Menu(name);
+            repoSubMenu.setFont(textFont);
 
             MenuItem openInBrowser = new MenuItem("Open in Browser");
-            openInBrowser.addActionListener(e ->
-                    openInBrowser(repoDesc.getRepoUrl())
-            );
+            openInBrowser.setFont(textFont);
+            openInBrowser.addActionListener(e -> openInBrowser(repoDesc.getRepoUrl()));
             repoSubMenu.add(openInBrowser);
 
             if (repoDesc.isPullRequestExists()) {
                 repoSubMenu.addSeparator();
 
-                repoDesc.getPullRequestUrls().forEach(prURL -> {
-                    MenuItem pullRequestMI = new MenuItem("View pull request");
-                    pullRequestMI.addActionListener(e -> openInBrowser(prURL));
+                repoDesc.getPullRequestModels().forEach(prModel -> {
+                    MenuItem pullRequestMI = new MenuItem(prModel.getShortName());
+                    pullRequestMI.setFont(textFont);
+                    pullRequestMI.addActionListener(e -> openInBrowser(prModel.getURL()));
                     repoSubMenu.add(pullRequestMI);
                 });
             }
